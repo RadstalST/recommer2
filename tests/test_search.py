@@ -8,8 +8,8 @@ class TestClass:
     def TestClass(self):
         pass
     def test_function(self):
-        print("test_function yoyoyo")
         info = ProductScope(desire="I want to buy a car", tags=["fast", "hatchback"],description="for my family")
         products = getProducts(info,verbose=True)
+        print(products)
         assert len(products.products) >= 5
         
