@@ -58,8 +58,17 @@ def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLi
     # pass
     return parser.parse(_output)
 
-def getAttribute(product_cat):
-	llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
+def getAttribute(product_cat:str,verbose: Optional[bool] = False)->productAttribute:
+    llm = ChatOpenAI(temperature=0, model="gpt-4")
+    search = SerpAPIWrapper()
+
+    tools = [
+        Tool(
+            name="Search",
+            func=search.run,
+            description="useful for when you need to ask with search",
+        )
+    ]
     agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS, verbose=False)
     parser = PydanticOutputParser(pydantic_object=productAttribute)
     format_instructions = parser.get_format_instructions()
@@ -70,6 +79,6 @@ def getAttribute(product_cat):
     2. What  variations, attributes, or important features would you have to consider to find the best product list out 20.
     3.output as {format_instructions}""",
     partial_variables={'format_instructions':format_instructions})
-	_input = prompt.format_prompt(product_cat=product_cat,format_instructions=format_instructions)
-    output = agent.run(_input.tostring())
+    _input = prompt.format_prompt(product_cat=product_cat,format_instructions=format_instructions)
+    output = agent.run(_input.to_string())
     return output

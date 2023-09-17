@@ -12,9 +12,10 @@ class TestClass:
         products = getProducts(info,verbose=True)
         print(products)
         assert len(products.products) >= 5
-	def test_attribute(self):
-		cat = "keyboard"
-		attributes = getAttribute(cat)
+    def test_attribute(self):
+        cat = "keyboard"
+        attributes = getAttribute(cat)
+        print(attributes)
 		
 
 		
