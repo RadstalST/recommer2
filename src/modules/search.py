@@ -111,7 +111,17 @@ def getSerpProducts(products:ProductsLists):
     #     results.append(_search(name))
     
     # map function
-    results = list(map(lambda product: _search(product.name), products_list))
+    results = list(map(
+        lambda product: _search(product.name), 
+        products_list
+        ))
+    # get shopping_results from each results and extend it together
+    results = list(map(
+        lambda result: result.get("shopping_results"), 
+        results
+        )) # get shopping_results from each results
+    results = [item for sublist in results for item in sublist] # flatten the list
+
 
     return results
    
