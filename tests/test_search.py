@@ -13,8 +13,8 @@ class TestClass:
         print(products)
         assert len(products.products) >= 5
     def test_getAttribute(self):
-        cat = "keyboard"
-        attributes = getAttribute(cat)
+        desire = "I want a keyboard"
+        attributes = getAttribute(desire)
         print(attributes)
 
     def test_serpProducts(self):
@@ -47,9 +47,9 @@ class TestClass:
 
 
         
-		
+        
 
-		
+        
 
 
         
