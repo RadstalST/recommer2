@@ -80,5 +80,6 @@ def getAttribute(product_cat:str,verbose: Optional[bool] = False)->productAttrib
     3.output as {format_instructions}""",
     partial_variables={'format_instructions':format_instructions})
     _input = prompt.format_prompt(product_cat=product_cat,format_instructions=format_instructions)
-    output = agent.run(_input.to_string())
-    return output
+    _output = agent.run(_input.to_string())
+
+    return parser.parse(_output)
