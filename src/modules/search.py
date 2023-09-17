@@ -4,24 +4,17 @@ from typing import Optional
 from langchain.agents import (AgentType, OpenAIFunctionsAgent, Tool,
                               initialize_agent, load_tools)
 from langchain.chat_models import ChatOpenAI
+from langchain.llms import OpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.output_parsers import (CommaSeparatedListOutputParser,
-                                      PydanticOutputParser)
+                                      PydanticOutputParser, ResponseSchema,
+                                      StructuredOutputParser)
 from langchain.prompts import (ChatPromptTemplate, HumanMessagePromptTemplate,
                                PromptTemplate)
 from langchain.pydantic_v1 import BaseModel, Field, validator
 from langchain.schema import SystemMessage
-from langchain.utilities import SerpAPIWrapper
-from pydantic import BaseModel
-from langchain.agents import initialize_agent, AgentType, Tool
-from langchain.chat_models import ChatOpenAI
-from langchain.llms import OpenAI
 from langchain.utilities import SerpAPIWrapper, SQLDatabase
-
-from langchain.prompts import PromptTemplate
-from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field, validator
-from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 
 
 class ProductScope(BaseModel):
@@ -78,4 +71,3 @@ def getAttribute(product_cat):
     partial_variables={'format_instructions':format_instructions})
     output = agent.run(prompt.format_prompt(product_cat))
     return output
-
