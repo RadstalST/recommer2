@@ -38,6 +38,7 @@ class TestClass:
         attributes = getAttribute(desire)
 
         tags = attributes.list_attribute
+		print('tags :',tags)
         info = ProductScope(desire=desire, tags=tags, description="for my family")
         products = getProducts(info, verbose=True)
         print(products)

@@ -32,9 +32,9 @@ class ProductsLists(BaseModel):
     products : list[ProductInfo]
 
 class ProductAttribute(BaseModel):
-  product_cat: str = Field(description="The input product category")
+  desire: str = Field(description="The desire product category")
   product_type: str = Field(description="Identify what type of product")
-  list_attribute: list[str] = Field(description="list of attributes")
+  list_variations: list[str] = Field(description="list of product variations")
     
 def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLists:
     llm = ChatOpenAI(temperature=0,model="gpt-4")
@@ -75,13 +75,14 @@ def getAttribute(product_cat:str,verbose: Optional[bool] = False)->ProductAttrib
     parser = PydanticOutputParser(pydantic_object=ProductAttribute)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate(
-    input_variables=["product_cat"],
-    template = """You are a consumer that wants to buy {product_cat}. 
-    1.Identify what is the product category or type.
-    2. What  variations, attributes, or important features would you have to consider to find the best product list out 20.
-    3.output as {format_instructions}""",
+    input_variables=["desire"],
+    template = """You are a consumer with the following desire:{desire}. 
+    Tasks:
+    1. Identify what is the product category.
+    2. List 20 possible variations types of product that most people would take into consideration.
+    3..output as {format_instructions}""",
     partial_variables={'format_instructions':format_instructions})
-    _input = prompt.format_prompt(product_cat=product_cat,format_instructions=format_instructions)
+    _input = prompt.format_prompt(desire=desire,format_instructions=format_instructions)
     _output = agent.run(_input.to_string())
 
     return parser.parse(_output)
