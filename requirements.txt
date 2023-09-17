@@ -1,0 +1,2 @@
+langchain==0.0.292
+pytest==7.4.2
