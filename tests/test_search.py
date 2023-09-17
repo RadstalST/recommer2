@@ -33,17 +33,17 @@ class TestClass:
   
         
 
-    # def test_integration(self):
-    #     desire = "I want to buy a car"
-    #     attributes = getAttribute(desire)
+    def test_integration(self):
+        desire = "I want to buy a car"
+        attributes = getAttribute(desire)
 
-    #     tags = attributes.list_attribute
-    #     info = ProductScope(desire=desire, tags=tags, description="for my family")
-    #     products = getProducts(info, verbose=True)
-    #     print(products)
+        tags = attributes.list_attribute
+        info = ProductScope(desire=desire, tags=tags, description="for my family")
+        products = getProducts(info, verbose=True)
+        print(products)
 
-    #     serp_results = getSerpProducts(products=products, verbose=True)
-    #     print(serp_results)
+        serp_results = getSerpProducts(products=products, verbose=True)
+        print(serp_results)
 
 
         
