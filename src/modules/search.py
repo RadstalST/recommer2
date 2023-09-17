@@ -59,6 +59,7 @@ def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLi
     return parser.parse(_output)
 
 def getAttribute(product_cat):
+	llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
     agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS, verbose=False)
     parser = PydanticOutputParser(pydantic_object=productAttribute)
     format_instructions = parser.get_format_instructions()
@@ -69,5 +70,6 @@ def getAttribute(product_cat):
     2. What  variations, attributes, or important features would you have to consider to find the best product list out 20.
     3.output as {format_instructions}""",
     partial_variables={'format_instructions':format_instructions})
-    output = agent.run(prompt.format_prompt(product_cat))
+	_input = prompt.format_prompt(product_cat=product_cat,format_instructions=format_instructions)
+    output = agent.run(_input.tostring())
     return output

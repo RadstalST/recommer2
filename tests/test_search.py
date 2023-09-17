@@ -14,6 +14,9 @@ class TestClass:
         assert len(products.products) >= 5
 	def test_attribute(self):
 		cat = "keyboard"
+		attributes = getAttribute(cat)
+		
+
 		
 
 
