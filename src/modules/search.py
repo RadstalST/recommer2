@@ -1,24 +1,18 @@
-# this is for searching stuffs
-#import pydantic
+import json
 from typing import Optional
 
 from langchain.agents import (AgentType, OpenAIFunctionsAgent, Tool,
                               initialize_agent, load_tools)
 from langchain.chat_models import ChatOpenAI
-from langchain.schema import SystemMessage
-# from langchain.utilities import GoogleSerperAPIWrapper
-from pydantic import BaseModel
-from langchain.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate
-from langchain.output_parsers import PydanticOutputParser
-from langchain.output_parsers import CommaSeparatedListOutputParser
-import json
-from langchain.pydantic_v1 import BaseModel, Field, validator
 from langchain.memory import ConversationBufferMemory
-
+from langchain.output_parsers import (CommaSeparatedListOutputParser,
+                                      PydanticOutputParser)
+from langchain.prompts import (ChatPromptTemplate, HumanMessagePromptTemplate,
+                               PromptTemplate)
+from langchain.pydantic_v1 import BaseModel, Field, validator
+from langchain.schema import SystemMessage
 from langchain.utilities import SerpAPIWrapper
-
-
-
+from pydantic import BaseModel
 
 
 class ProductScope(BaseModel):
@@ -33,7 +27,7 @@ class ProductInfo(BaseModel):
 class ProductsLists(BaseModel):
     products : list[ProductInfo]
     
-def getProducts(info: ProductScope, verbose: Optional[bool] = False):
+def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLists:
     llm = ChatOpenAI(temperature=0,model="gpt-4")
     # search = GoogleSerperAPIWrapper()
     search = SerpAPIWrapper()
@@ -45,13 +39,8 @@ def getProducts(info: ProductScope, verbose: Optional[bool] = False):
         )
     ]
     memory = ConversationBufferMemory(memory_key="chat_history")
-
-
     agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS , memory=memory,verbose=verbose)
-    # parser = CommaSeparatedListOutputParser() 
-
     parser = PydanticOutputParser(pydantic_object=ProductsLists)
-    
     prompt = PromptTemplate(
         template="What are the top 5 for match the description :{product_scope} \n that matches the format. {format_instructions}\n\n",
         input_variables=["product_scope"],
