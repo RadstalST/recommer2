@@ -4,15 +4,17 @@ from typing import Optional
 from langchain.agents import (AgentType, OpenAIFunctionsAgent, Tool,
                               initialize_agent, load_tools)
 from langchain.chat_models import ChatOpenAI
+from langchain.llms import OpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.output_parsers import (CommaSeparatedListOutputParser,
-                                      PydanticOutputParser)
+                                      PydanticOutputParser, ResponseSchema,
+                                      StructuredOutputParser)
 from langchain.prompts import (ChatPromptTemplate, HumanMessagePromptTemplate,
                                PromptTemplate)
 from langchain.pydantic_v1 import BaseModel, Field, validator
 from langchain.schema import SystemMessage
-from langchain.utilities import SerpAPIWrapper
-from pydantic import BaseModel
+from langchain.utilities import SerpAPIWrapper, SQLDatabase
+from pydantic import BaseModel, Field, validator
 
 
 class ProductScope(BaseModel):
@@ -26,6 +28,11 @@ class ProductInfo(BaseModel):
 
 class ProductsLists(BaseModel):
     products : list[ProductInfo]
+
+class productAttribute(BaseModel):
+  product_cat: str = Field(description="The input product category")
+  product_type: str = Field(description="Identify what type of product")
+  list_attribute: list[str] = Field(description="list of attributes")
     
 def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLists:
     llm = ChatOpenAI(temperature=0,model="gpt-4")
@@ -51,3 +58,28 @@ def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLi
     # pass
     return parser.parse(_output)
 
+def getAttribute(product_cat:str,verbose: Optional[bool] = False)->productAttribute:
+    llm = ChatOpenAI(temperature=0, model="gpt-4")
+    search = SerpAPIWrapper()
+
+    tools = [
+        Tool(
+            name="Search",
+            func=search.run,
+            description="useful for when you need to ask with search",
+        )
+    ]
+    agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS, verbose=False)
+    parser = PydanticOutputParser(pydantic_object=productAttribute)
+    format_instructions = parser.get_format_instructions()
+    prompt = PromptTemplate(
+    input_variables=["product_cat"],
+    template = """You are a consumer that wants to buy {product_cat}. 
+    1.Identify what is the product category or type.
+    2. What  variations, attributes, or important features would you have to consider to find the best product list out 20.
+    3.output as {format_instructions}""",
+    partial_variables={'format_instructions':format_instructions})
+    _input = prompt.format_prompt(product_cat=product_cat,format_instructions=format_instructions)
+    _output = agent.run(_input.to_string())
+
+    return parser.parse(_output)
