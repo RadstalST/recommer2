@@ -1,5 +1,7 @@
 import json
+import os
 from typing import Optional
+from serpapi import GoogleSearch
 
 from langchain.agents import (AgentType, OpenAIFunctionsAgent, Tool,
                               initialize_agent, load_tools)
@@ -83,3 +85,33 @@ def getAttribute(product_cat:str,verbose: Optional[bool] = False)->ProductAttrib
     _output = agent.run(_input.to_string())
 
     return parser.parse(_output)
+
+
+def getSerpProducts(products:ProductsLists):
+    search = SerpAPIWrapper()
+
+
+    def _search(name):
+        params = {
+        "api_key": os.getenv("SERPAPI_API_KEY"),
+        "engine": "google_shopping",
+        "google_domain": "google.com",
+        "q": name
+        }
+
+        search = GoogleSearch(params)
+        return search.get_dict()
+    
+    results = []
+    products_list = products.products
+    # would be better to use a map function or dask
+
+    # for product in products_list:
+    #     name = product.name
+    #     results.append(_search(name))
+    
+    # map function
+    results = list(map(lambda product: _search(product.name), products_list))
+
+    return results
+   
