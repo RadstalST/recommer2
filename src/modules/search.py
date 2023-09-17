@@ -70,7 +70,7 @@ def getAttribute(product_cat:str,verbose: Optional[bool] = False)->ProductAttrib
         )
     ]
     agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS, verbose=False)
-    parser = PydanticOutputParser(pydantic_object=productAttribute)
+    parser = PydanticOutputParser(pydantic_object=ProductAttribute)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate(
     input_variables=["product_cat"],
