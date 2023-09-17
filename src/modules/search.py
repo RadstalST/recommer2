@@ -60,7 +60,7 @@ def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLi
     # pass
     return parser.parse(_output)
 
-def getAttribute(product_cat:str,verbose: Optional[bool] = False)->ProductAttribute:
+def getAttribute(desire:str,verbose: Optional[bool] = False)->ProductAttribute:
     llm = ChatOpenAI(temperature=0, model="gpt-4")
     search = SerpAPIWrapper()
 

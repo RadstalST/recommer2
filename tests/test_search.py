@@ -13,8 +13,8 @@ class TestClass:
         print(products)
         assert len(products.products) >= 5
     def test_getAttribute(self):
-        cat = "keyboard"
-        attributes = getAttribute(cat)
+        desire = "I want a keyboard"
+        attributes = getAttribute(desire)
         print(attributes)
 
     def test_serpProducts(self):
@@ -37,8 +37,8 @@ class TestClass:
         desire = "I want to buy a car"
         attributes = getAttribute(desire)
 
-        tags = attributes.list_attribute
-		print('tags :',tags)
+        tags = attributes.list_variations
+        print(tags)
         info = ProductScope(desire=desire, tags=tags, description="for my family")
         products = getProducts(info, verbose=True)
         print(products)
@@ -48,9 +48,9 @@ class TestClass:
 
 
         
-		
+        
 
-		
+        
 
 
         
