@@ -29,7 +29,7 @@ class ProductInfo(BaseModel):
 class ProductsLists(BaseModel):
     products : list[ProductInfo]
 
-class productAttribute(BaseModel):
+class ProductAttribute(BaseModel):
   product_cat: str = Field(description="The input product category")
   product_type: str = Field(description="Identify what type of product")
   list_attribute: list[str] = Field(description="list of attributes")
@@ -58,7 +58,7 @@ def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLi
     # pass
     return parser.parse(_output)
 
-def getAttribute(product_cat:str,verbose: Optional[bool] = False)->productAttribute:
+def getAttribute(product_cat:str,verbose: Optional[bool] = False)->ProductAttribute:
     llm = ChatOpenAI(temperature=0, model="gpt-4")
     search = SerpAPIWrapper()
 
