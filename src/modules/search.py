@@ -1,5 +1,7 @@
 import json
+import os
 from typing import Optional
+from serpapi import GoogleSearch
 
 from langchain.agents import (AgentType, OpenAIFunctionsAgent, Tool,
                               initialize_agent, load_tools)
@@ -29,10 +31,10 @@ class ProductInfo(BaseModel):
 class ProductsLists(BaseModel):
     products : list[ProductInfo]
 
-class productAttribute(BaseModel):
-  product_cat: str = Field(description="The input product category")
+class ProductAttribute(BaseModel):
+  desire: str = Field(description="The desire product category")
   product_type: str = Field(description="Identify what type of product")
-  list_attribute: list[str] = Field(description="list of attributes")
+  list_variations: list[str] = Field(description="list of product variations")
     
 def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLists:
     llm = ChatOpenAI(temperature=0,model="gpt-4")
@@ -58,7 +60,7 @@ def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLi
     # pass
     return parser.parse(_output)
 
-def getAttribute(product_cat:str,verbose: Optional[bool] = False)->productAttribute:
+def getAttribute(desire:str,verbose: Optional[bool] = False)->ProductAttribute:
     llm = ChatOpenAI(temperature=0, model="gpt-4")
     search = SerpAPIWrapper()
 
@@ -70,16 +72,57 @@ def getAttribute(product_cat:str,verbose: Optional[bool] = False)->productAttrib
         )
     ]
     agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS, verbose=False)
-    parser = PydanticOutputParser(pydantic_object=productAttribute)
+    parser = PydanticOutputParser(pydantic_object=ProductAttribute)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate(
-    input_variables=["product_cat"],
-    template = """You are a consumer that wants to buy {product_cat}. 
-    1.Identify what is the product category or type.
-    2. What  variations, attributes, or important features would you have to consider to find the best product list out 20.
-    3.output as {format_instructions}""",
+    input_variables=["desire"],
+    template = """You are a consumer with the following desire:{desire}. 
+    Tasks:
+    1. Identify what is the product category.
+    2. List 20 possible variations types of product that most people would take into consideration.
+    3..output as {format_instructions}""",
     partial_variables={'format_instructions':format_instructions})
-    _input = prompt.format_prompt(product_cat=product_cat,format_instructions=format_instructions)
+    _input = prompt.format_prompt(desire=desire,format_instructions=format_instructions)
     _output = agent.run(_input.to_string())
 
     return parser.parse(_output)
+
+
+def getSerpProducts(products:ProductsLists):
+    search = SerpAPIWrapper()
+
+
+    def _search(name):
+        params = {
+        "api_key": os.getenv("SERPAPI_API_KEY"),
+        "engine": "google_shopping",
+        "google_domain": "google.com",
+        "q": name
+        }
+
+        search = GoogleSearch(params)
+        return search.get_dict()
+    
+    results = []
+    products_list = products.products
+    # would be better to use a map function or dask
+
+    # for product in products_list:
+    #     name = product.name
+    #     results.append(_search(name))
+    
+    # map function
+    results = list(map(
+        lambda product: _search(product.name), 
+        products_list
+        ))
+    # get shopping_results from each results and extend it together
+    results = list(map(
+        lambda result: result.get("shopping_results"), 
+        results
+        )) # get shopping_results from each results
+    results = [item for sublist in results for item in sublist] # flatten the list
+
+
+    return results
+   
