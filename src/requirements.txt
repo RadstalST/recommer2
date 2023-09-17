@@ -1,0 +1,6 @@
+langchain==0.0.292
+pytest==7.4.2
+python-dotenv==1.0.0
+openai==0.28.0
+pytest-dotenv==0.5.2
+google-search-results==2.4.2
