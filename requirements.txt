@@ -8,3 +8,4 @@ streamlit==1.27.1
 watchdog
 duckduckgo-search=3.9.0
 pandas
+dask

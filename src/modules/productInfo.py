@@ -83,7 +83,10 @@ def getPros(productModel:str)->Pros:
    """,partial_variables={'format_instructions':format_instructions})
     _input = prompt.format_prompt(productModel=productModel,format_instructions=format_instructions)
     _output = agent.run(_input.to_string())
-    return parser.parse(_output)
+    try:
+        return parser.parse(_output)
+    except:
+        return None
 
     
 
@@ -111,7 +114,10 @@ def getCons(productModel:str)->list[str]:
    """,partial_variables={'format_instructions':format_instructions})
     _input = prompt.format_prompt(productModel=productModel,format_instructions=format_instructions)
     _output = agent.run(_input.to_string())
-    return parser.parse(_output)
+    try:
+        return parser.parse(_output)
+    except:
+        return None
 
 
 def getProductDetail(productModel: str,verbose: Optional[bool]=False) ->ProductDetail:
@@ -138,7 +144,11 @@ def getProductDetail(productModel: str,verbose: Optional[bool]=False) ->ProductD
    """,partial_variables={'format_instructions':format_instructions})
     _input = prompt.format_prompt(productModel=productModel,format_instructions=format_instructions)
     _output = agent.run(_input.to_string())
-    return parser.parse(_output)
+
+    try:
+        return parser.parse(_output)
+    except:
+        return None
 
 
 

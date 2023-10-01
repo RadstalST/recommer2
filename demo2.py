@@ -1,7 +1,10 @@
 import streamlit as st
 from src.modules.search import getProducts, ProductScope, ProductAttribute,getAttribute, getSerpProducts
+from src.modules.productInfo import getPros, getCons, getProductDetail
 from dotenv import load_dotenv
 import pandas as pd
+from dask.threaded import get
+
 load_dotenv()
 
 st.title("Recommer Linear Demo")
@@ -104,15 +107,41 @@ if "products" in st.session_state:
                         },
 
                         ])
+                   
+                    
                     st.table(_df)
                     
                 with col2:
                     st.image(product["thumbnail"])
+                dsk = {'product_title': product["title"],
+                    'pros': (getPros, 'product_title'),
+                    'cons': (getCons, 'product_title'),
+                    "details":(getProductDetail, 'product_title')}
+
+                pros,cons,details = get(dsk, ["pros","cons","details"])
+                st.write(details.detail)
+
+                pros_col, cons_col = st.columns(2)
+                with pros_col:
+                    st.subheader("Pros")
+                    if pros is None:
+                        st.write("Not Avaliable")
+                    else:
+                        for pro in pros.pros:
+                            st.markdown(f"- {pro}")
+                with cons_col:
+                    st.subheader("Cons")
+                    if cons is None:
+                        st.write("Not Avaliable")
+                    else:
+                        for con in cons.cons:
+                            st.markdown(f"- {con}")
                     
-                # with st.expander("More", expanded=False):
-                #     st.json(product)
+
+                
+                
             
             
         submit_select_product = st.form_submit_button(label="Submit")
 
-        
+

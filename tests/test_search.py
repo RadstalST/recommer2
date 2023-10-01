@@ -13,6 +13,9 @@ class TestClass:
         print(products)
         assert len(products.products) >= 5
     def test_getAttribute(self):
+        """
+        Test the getAttribute function by passing in a desire string and checking the returned attributes.
+        """
         desire = "I want a keyboard"
         attributes = getAttribute(desire)
         print(attributes)
