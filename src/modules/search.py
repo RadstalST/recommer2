@@ -2,6 +2,8 @@ import json
 import os
 from typing import Optional
 from serpapi import GoogleSearch
+from langchain.tools import DuckDuckGoSearchRun
+
 
 from langchain.agents import (AgentType, OpenAIFunctionsAgent, Tool,
                               initialize_agent, load_tools)
@@ -39,7 +41,7 @@ class ProductAttribute(BaseModel):
 def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLists:
     llm = ChatOpenAI(temperature=0,model="gpt-4")
     # search = GoogleSerperAPIWrapper()
-    search = SerpAPIWrapper()
+    search = DuckDuckGoSearchRun()
     tools = [
         Tool(
             name="Search",
@@ -51,7 +53,7 @@ def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLi
     agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS , memory=memory,verbose=verbose)
     parser = PydanticOutputParser(pydantic_object=ProductsLists)
     prompt = PromptTemplate(
-        template="What are the top 5 for match the description :{product_scope} \n that matches the format. {format_instructions}\n\n",
+        template="What are the top product of 2023 that match the description :\n {product_scope} \n that matches the format.\n {format_instructions}\n",
         input_variables=["product_scope"],
         partial_variables={"format_instructions": parser.get_format_instructions()}
     )
@@ -91,13 +93,38 @@ def getAttribute(desire:str,verbose: Optional[bool] = False)->ProductAttribute:
 def getSerpProducts(products:ProductsLists):
     search = SerpAPIWrapper()
 
-
+    def _product_filter(product):
+        if product.get("title") is None:
+            return False
+        if product.get("price") is None:
+            return False
+        if product.get("extracted_price") is None:
+            return False
+        if product.get("link") is None:
+            return False
+        
+        if product.get("source") is None:
+            return False
+        if product.get("thumbnail") is None:
+            return False
+        if product.get("extensions") is None:
+            return False
+        if product.get("store_rating") is None:
+            return False
+        if product.get("rating") is None:
+            return False
+        return True
+        
     def _search(name):
         params = {
         "api_key": os.getenv("SERPAPI_API_KEY"),
         "engine": "google_shopping",
-        "google_domain": "google.com",
-        "q": name
+        "q": name,
+        # "gl":"th",
+        # "location_requested":"Bangkok, Bangkok, Thailand",
+        # "location_used":"Bangkok,Bangkok,Thailand",
+        "google_domain":"google.com",
+        # "gl":"th",
         }
 
         search = GoogleSearch(params)
@@ -114,15 +141,15 @@ def getSerpProducts(products:ProductsLists):
     # map function
     results = list(map(
         lambda product: _search(product.name), 
-        products_list
+        products_list # limit to 1 products
         ))
     # get shopping_results from each results and extend it together
     results = list(map(
-        lambda result: result.get("shopping_results"), 
+        lambda result: list(filter(_product_filter,result.get("shopping_results")))[:5],  #filter to 5 results
         results
         )) # get shopping_results from each results
     results = [item for sublist in results for item in sublist] # flatten the list
+    sort = sorted(results, key=lambda x: float(x["extracted_price"])) # sort by price
 
-
-    return results
+    return sort
    
