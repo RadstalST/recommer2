@@ -146,21 +146,31 @@ def getProductDetail(productModel: str,verbose: Optional[bool]=False) ->ProductD
     _output = agent.run(_input.to_string())
     return parser.parse(_output)
 
-#def getProductDeals(productModel:str,location:str)->ProductDeals:
- #   search = DuckDuckGoSearchRun()
 
-  #  llm = ChatOpenAI(temperature=0, model="gpt-4")
-   # tools = [
-    #    Tool(
-     #       name="Search",
-      #      func=search.run,
-       #     description="useful for when you need to ask with search",
-        #)
-    #]
-    #agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS, verbose=True)
-    #prompt=PromptTemplate(
-     #   input_
-    #)
+
+def getProductDeals(productModel:str,location:str)->ProductDeals:
+   search = DuckDuckGoSearchRun()
+    llm = ChatOpenAI(temperature=0, model="gpt-4")
+    tools = [
+            Tool(
+                name="Search",
+                func=search.run,
+                description="useful for when you need to ask with search",
+            )
+        ]
+    agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS, verbose=True)
+    prompt=PromptTemplate(
+            input_variables=["productModel","country"],
+            template = """
+            You are a pro online shopper who wants to find the best deals in {country}.
+            Tasks:
+            1.Search for 5 online sales channel that is popular in {country} and sells {productModel} 
+            2. Look up the price of this sales channel
+            3. save the link source
+            Output as a table :
+            Sales_channel_name| price_range | hyperlink 
+            """
+        )
 
 
 
