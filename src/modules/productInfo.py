@@ -1,7 +1,8 @@
 import json
 import os
-from typing import Optional
+from typing import Optional,Dict
 from serpapi import GoogleSearch
+from langchain.tools import DuckDuckGoSearchRun
 
 from langchain.agents import (AgentType, OpenAIFunctionsAgent, Tool,
                               initialize_agent, load_tools)
@@ -26,12 +27,16 @@ class ProductDetail(BaseModel):
     detail: str=Field(description="details of the product key feature")
   #  specs: list[str] = Field(description="lists of important specs of the proudcts")
 
-
-class ProductDeals(BaseModel):
-    name: str=Field(description="name of the product model")
-    channel: str=Field(description="sales channel")
-    price_range: str=Field(description="price range of the product in this channel")
+class SalesChannel(BaseModel):
+    price: str=Field(description="price range of the product in this channel")
     link: str=Field(description="link to this sales channel")
+    deal: str=Field(description="details of the deal")
+    
+
+#class ProductDeals(BaseModel):
+ #   name: str=Field(description="name of the product model")
+  #  channel_dict: Dict[str=Field(description="name of the channel"),SalesChannel]
+    
 
 class Pros(BaseModel):
     name: str=Field(description="name of the product model")
@@ -52,6 +57,7 @@ def getPositiveReviews(productModel:str)->str:
         )
     ]
     llm = ChatOpenAI(temperature=0, model="gpt-4")
+
 
 
     
@@ -83,10 +89,7 @@ def getPros(productModel:str)->Pros:
    """,partial_variables={'format_instructions':format_instructions})
     _input = prompt.format_prompt(productModel=productModel,format_instructions=format_instructions)
     _output = agent.run(_input.to_string())
-    try:
-        return parser.parse(_output)
-    except:
-        return None
+    return parser.parse(_output)
 
     
 
@@ -114,10 +117,7 @@ def getCons(productModel:str)->list[str]:
    """,partial_variables={'format_instructions':format_instructions})
     _input = prompt.format_prompt(productModel=productModel,format_instructions=format_instructions)
     _output = agent.run(_input.to_string())
-    try:
-        return parser.parse(_output)
-    except:
-        return None
+    return parser.parse(_output)
 
 
 def getProductDetail(productModel: str,verbose: Optional[bool]=False) ->ProductDetail:
@@ -144,11 +144,26 @@ def getProductDetail(productModel: str,verbose: Optional[bool]=False) ->ProductD
    """,partial_variables={'format_instructions':format_instructions})
     _input = prompt.format_prompt(productModel=productModel,format_instructions=format_instructions)
     _output = agent.run(_input.to_string())
+    return parser.parse(_output)
 
-    try:
-        return parser.parse(_output)
-    except:
-        return None
+#def getProductDeals(productModel:str,location:str)->ProductDeals:
+ #   search = DuckDuckGoSearchRun()
+
+  #  llm = ChatOpenAI(temperature=0, model="gpt-4")
+   # tools = [
+    #    Tool(
+     #       name="Search",
+      #      func=search.run,
+       #     description="useful for when you need to ask with search",
+        #)
+    #]
+    #agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS, verbose=True)
+    #prompt=PromptTemplate(
+     #   input_
+    #)
+
+
+
 
 
 

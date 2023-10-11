@@ -6,6 +6,6 @@ pytest-dotenv==0.5.2
 google-search-results==2.4.2
 streamlit==1.27.1
 watchdog
-duckduckgo-search=3.9.0
+duckduckgo-search==3.9.0
 pandas
 dask

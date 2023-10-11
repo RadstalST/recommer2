@@ -38,7 +38,7 @@ class ProductAttribute(BaseModel):
   product_type: str = Field(description="Identify what type of product")
   list_variations: list[str] = Field(description="list of product variations")
     
-def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLists:
+def getProducts(info: ProductScope, verbose: Optional[bool] = True)->ProductsLists:
     llm = ChatOpenAI(temperature=0,model="gpt-4")
     # search = GoogleSerperAPIWrapper()
     search = DuckDuckGoSearchRun()
