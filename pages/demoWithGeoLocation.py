@@ -1,5 +1,5 @@
 import streamlit as st
-from src.modules.search import getProducts, ProductScope, ProductAttribute,getAttribute, getSerpProducts,ProductsLists
+from src.modules.search import getProducts, ProductScope, ProductAttribute,getAttribute, getSerpProduct,ProductsLists
 from streamlit_js_eval import streamlit_js_eval, copy_to_clipboard, create_share_link, get_geolocation
 from src.modules import utils
 import json
@@ -131,7 +131,11 @@ if "attributes" in st.session_state:
                                 st.header(product.name)
                                 st.caption(product.description)
                                 st.subheader("Related Products")
-                                st.status("AI: Loading related Products...")
+                                with st.status("AI: Loading related Products..."):
+                                    st.write("Searching for data...")
+                                    related_products = getSerpProduct(product,hash=product.name,latlong=latlong)
+                                    st.write(related_products)
+                                    st.write("Done")
                         
                     st.write("Done")
 

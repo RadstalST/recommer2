@@ -156,4 +156,63 @@ def getSerpProducts(products:ProductsLists,latlong:tuple,verbose: Optional[bool]
     sort = sorted(results, key=lambda x: float(x["extracted_price"])) # sort by price
 
     return sort
+
+
+def getSerpProduct(_product:ProductInfo,hash,latlong:tuple,verbose: Optional[bool] = False):
+    # search = SerpAPIWrapper()
+    
+    def _product_filter(product):
+        if product.get("title") is None:
+            return False
+        if product.get("price") is None:
+            return False
+        if product.get("extracted_price") is None:
+            return False
+        if product.get("link") is None:
+            return False
+        
+        if product.get("source") is None:
+            return False
+        if product.get("thumbnail") is None:
+            return False
+        # if product.get("store_rating") is None:
+        #     return False
+        # if product.get("rating") is None:
+        #     return False
+        return True
+        
+    def _search(name):
+
+        country_code = utils.getCountryCode(latlong)
+
+        params = {
+        "api_key": os.getenv("SERPAPI_API_KEY"),
+        "engine": "google_shopping",
+        "q": name,
+        "gl":"en" if country_code is None else country_code,# country code from geolocation api
+        # "location_requested":"Bangkok, Bangkok, Thailand",
+        # "location_used":"Bangkok,Bangkok,Thailand",
+        "google_domain":"google.com",
+        # "gl":"th",
+        }
+
+        search = GoogleSearch(params)
+        return search.get_dict()
+    
+    results = []
+    # would be better to use a map function or dask
+
+    # for product in products_list:
+    #     name = product.name
+    #     results.append(_search(name))
+    
+    # map function
+    result = _search(_product.name)
+
+
+    # get shopping_results from each results and extend it together
+    results = list(filter(_product_filter,result.get("shopping_results")))
+    sort = list(sorted(results, key=lambda x: float(x["position"])))
+
+    return sort[:10] # limit to 10 results
    
