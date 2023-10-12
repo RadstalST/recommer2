@@ -16,7 +16,8 @@ productOptionsContainer = st.container()
 st.divider()
 productListContainer = st.container()
 
-#init user info
+#init cache var
+# attributes = None
 
 loc = get_geolocation()
 if loc:
@@ -69,73 +70,74 @@ with desireContainer:
             with st.chat_message("assistant"):
                 with st.status("AI: Loading related Product Attributes..."):
                     st.write("Loading the product attributes...")
-                    attributes = getAttribute(desire)
-                    st.session_state.attributes = attributes
+                    attributes = getAttribute(message)
+                    # st.session_state.attributes = attributes
                     st.write(attributes)
 
 
 productContainers = dict()
-if "attributes" in st.session_state:
-    with productOptionsContainer:
-        cols = st.columns(3)
-        attributes_options = dict()
+# if "attributes" in st.session_state:
+with productOptionsContainer:
+    cols = st.columns(3)
+    attributes_options = dict()
 
-        if 'attributes_options' in st.session_state:
-            attributes_options = st.session_state.attributes_options
-        else:
-            # attributes_options = dict with variation as key and value as boolean(false)    
-            attributes = st.session_state.get("attributes")
-            for i, variation in enumerate(attributes.list_variations):
-                attributes_options[variation] = False
-        for i, variation in enumerate(attributes_options.keys()):
-            with cols[i%3]:
-                attributes_options[variation] = st.checkbox(variation)
+    # if 'attributes_options' in st.session_state:
+    #     attributes_options = st.session_state.attributes_options
+    # else:
+        # attributes_options = dict with variation as key and value as boolean(false)    
+        # attributes = st.session_state.get("attributes")
+    attributes = getAttribute(message) #from cache
+    for i, variation in enumerate(attributes.list_variations):
+        attributes_options[variation] = False
+    for i, variation in enumerate(attributes_options.keys()):
+        with cols[i%3]:
+            attributes_options[variation] = st.checkbox(variation)
 
-        st.session_state.attributes_options = attributes_options
+    st.session_state.attributes_options = attributes_options
 
-        with st.form(key="attribute_form"):
+    with st.form(key="attribute_form"):
 
+        with st.chat_message("assistant"):
+            selected_attributes = [k for k,v in attributes_options.items() if v==True]
+            st.write(f"You want: \n\n{message or 'nothing'} \n\nwith the following attributes:")
+            if len(selected_attributes) == 0:
+                st.markdown("`None`")
+            else:
+                st.markdown("`"+"`, `".join(selected_attributes)+"`")
+                    
+        with st.chat_message("user"):
+            st.write("I want products with those attributes")
+            submitted_attrubute = st.form_submit_button(label="Submit")
+        
+        if submitted_attrubute:
+            productScope = ProductScope(
+                desire=message, 
+                tags=selected_attributes,
+                description=""
+            )
             with st.chat_message("assistant"):
-                selected_attributes = [k for k,v in attributes_options.items() if v==True]
-                st.write(f"You want: \n\n{message or 'nothing'} \n\nwith the following attributes:")
-                if len(selected_attributes) == 0:
-                    st.markdown("`None`")
-                else:
-                    st.markdown("`"+"`, `".join(selected_attributes)+"`")
-                        
-            with st.chat_message("user"):
-                st.write("I want products with those attributes")
-                submitted_attrubute = st.form_submit_button(label="Submit")
-            
-            if submitted_attrubute:
-                productScope = ProductScope(
-                    desire=message, 
-                    tags=selected_attributes,
-                    description=""
-                )
-                with st.chat_message("assistant"):
-                    with st.status("AI: Loading related Products..."):
-                        st.write("Searching for data...")
-                        st.session_state.products = getProducts(productScope,hash=productScope.model_dump_json())   
-                        st.write(st.session_state.products)
-                        st.write("Done")
-                with st.chat_message("assistant"):
-                    st.write("Here are the top products that matches description")
-                    # st.write(st.session_state.products)
-                    for product in ProductsLists(**json.loads(st.session_state.products)).products:
-                        _key = "product_"+product.name
-                        
-                        with productListContainer:
-                            productContainers[_key] = st.container()
-                            with productContainers[_key]:
-                                st.header(product.name)
-                                st.caption(product.description)
-                                st.subheader("Related Products")
-                                with st.status("AI: Loading related Products..."):
-                                    st.write("Searching for data...")
-                                    related_products = getSerpProduct(product,hash=product.name,latlong=latlong)
-                                    st.write(related_products)
-                                    st.write("Done")
-                        
+                with st.status("AI: Loading related Products..."):
+                    st.write("Searching for data...")
+                    st.session_state.products = getProducts(productScope,hash=productScope.model_dump_json())   
+                    st.write(st.session_state.products)
                     st.write("Done")
+            with st.chat_message("assistant"):
+                st.write("Here are the top products that matches description")
+                # st.write(st.session_state.products)
+                for product in ProductsLists(**json.loads(st.session_state.products)).products:
+                    _key = "product_"+product.name
+                    
+                    with productListContainer:
+                        productContainers[_key] = st.container()
+                        with productContainers[_key]:
+                            st.header(product.name)
+                            st.caption(product.description)
+                            st.subheader("Related Products")
+                            with st.status("AI: Loading related Products..."):
+                                st.write("Searching for data...")
+                                related_products = getSerpProduct(product,hash=product.name,latlong=latlong)
+                                st.write(related_products)
+                                st.write("Done")
+                    
+                st.write("Done")
 
