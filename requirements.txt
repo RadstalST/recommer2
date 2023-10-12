@@ -9,3 +9,7 @@ watchdog
 duckduckgo-search=3.9.0
 pandas
 dask
+bokeh=3.3.0
+streamlit-bokeh-events=0.1.2
+streamlit_js_eval=0.1.5
+geopy=2.4.0

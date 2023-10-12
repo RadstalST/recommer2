@@ -1,0 +1,18 @@
+from geopy.geocoders import Nominatim
+import os
+
+def getCountryCode(latlong):
+    try:
+        geolocator = Nominatim(user_agent=os.getenv("NOMATIM_USER_AGENT",""))
+        location=geolocator.reverse(latlong)
+        address = location.raw['address']
+    except:
+        return None
+    
+    return address.get("country_code", None)
+def isValidString(string):
+    if string is None:
+        return False
+    if string == "":
+        return False
+    return True

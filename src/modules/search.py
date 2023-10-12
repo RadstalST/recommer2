@@ -19,7 +19,7 @@ from langchain.pydantic_v1 import BaseModel, Field, validator
 from langchain.schema import SystemMessage
 from langchain.utilities import SerpAPIWrapper, SQLDatabase
 from pydantic import BaseModel, Field, validator
-
+from . import utils
 
 class ProductScope(BaseModel):
     desire: str
@@ -36,9 +36,9 @@ class ProductsLists(BaseModel):
 class ProductAttribute(BaseModel):
   desire: str = Field(description="The desire product category")
   product_type: str = Field(description="Identify what type of product")
-  list_variations: list[str] = Field(description="list of product variations")
+  list_variations: list[str] = Field(description="list of product variations that most people would take into consideration for the product category eg. wireless")
     
-def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLists:
+def getProducts(_info: ProductScope, hash:str,verbose: Optional[bool] = False)->ProductsLists:
     llm = ChatOpenAI(temperature=0,model="gpt-4")
     # search = GoogleSerperAPIWrapper()
     search = DuckDuckGoSearchRun()
@@ -57,10 +57,10 @@ def getProducts(info: ProductScope, verbose: Optional[bool] = False)->ProductsLi
         input_variables=["product_scope"],
         partial_variables={"format_instructions": parser.get_format_instructions()}
     )
-    _input = prompt.format_prompt(product_scope=f"{info.dict()}",format_instructions=parser.get_format_instructions())
+    _input = prompt.format_prompt(product_scope=f"{_info.model_dump}",format_instructions=parser.get_format_instructions())
     _output = agent.run(_input.to_string())
     # pass
-    return parser.parse(_output)
+    return parser.parse(_output).model_dump_json()
 
 def getAttribute(desire:str,verbose: Optional[bool] = False)->ProductAttribute:
     llm = ChatOpenAI(temperature=0, model="gpt-4")
@@ -81,8 +81,9 @@ def getAttribute(desire:str,verbose: Optional[bool] = False)->ProductAttribute:
     template = """You are a consumer with the following desire:{desire}. 
     Tasks:
     1. Identify what is the product category.
-    2. List 20 possible variations types of product that most people would take into consideration.
-    3..output as {format_instructions}""",
+    2. List 20 possible variations types that most people would take into consideration.
+    {format_instructions}
+    """,
     partial_variables={'format_instructions':format_instructions})
     _input = prompt.format_prompt(desire=desire,format_instructions=format_instructions)
     _output = agent.run(_input.to_string())
@@ -90,9 +91,9 @@ def getAttribute(desire:str,verbose: Optional[bool] = False)->ProductAttribute:
     return parser.parse(_output)
 
 
-def getSerpProducts(products:ProductsLists):
-    search = SerpAPIWrapper()
-
+def getSerpProducts(products:ProductsLists,latlong:tuple,verbose: Optional[bool] = False):
+    # search = SerpAPIWrapper()
+    
     def _product_filter(product):
         if product.get("title") is None:
             return False
@@ -116,11 +117,14 @@ def getSerpProducts(products:ProductsLists):
         return True
         
     def _search(name):
+
+        country_code = utils.getCountryCode(latlong)
+
         params = {
         "api_key": os.getenv("SERPAPI_API_KEY"),
         "engine": "google_shopping",
         "q": name,
-        # "gl":"th",
+        "gl":"en" if country_code is None else country_code,# country code from geolocation api
         # "location_requested":"Bangkok, Bangkok, Thailand",
         # "location_used":"Bangkok,Bangkok,Thailand",
         "google_domain":"google.com",

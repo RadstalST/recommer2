@@ -1,7 +1,7 @@
 import pytest 
 from dotenv import load_dotenv
 
-from src.modules.productInfo import getNegativeReviews, getPositiveReviews,getProductDetail,getProductDeals,getPros,getCons
+from src.modules.productInfo import getNegativeReviews, getPositiveReviews,getProductDetail,getPros,getCons
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
