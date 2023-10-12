@@ -19,7 +19,15 @@ productOptionsContainer = st.container()
 st.divider()
 productListContainer = st.container()
 
-#init cache var
+#init rendering and utils functions
+def processProduct(products_df):
+    _products_df = products_df.copy()
+    _products_df = _products_df.set_index("source")[["title","link","price","thumbnail"]]
+    _products_df["link"] = _products_df["link"].apply(utils.removeHTMLParametres)
+    _products_df["buy from site"] = _products_df[["link","title"]].apply(lambda x: f'buy from:[{utils.domainExtractor(x.link)}]({x.link})',axis=1)
+    _products_df["thumbnail"] = _products_df["thumbnail"].apply(lambda x: f'<img src="{x}" width="100" height="100">')
+    return _products_df
+
 # attributes = None
 
 loc = get_geolocation()
@@ -144,15 +152,9 @@ with productOptionsContainer:
 
                             
                             related_products_df = pd.DataFrame(related_products)
-                            _related_products_df = related_products_df.copy()
-                            _related_products_df = _related_products_df.set_index("source")[["title","link","price","thumbnail"]]
-                            _related_products_df["link"] = _related_products_df["link"].apply(utils.removeHTMLParametres)
-                            # _related_products_df["title"] = _related_products_df[["link","title"]].apply(lambda x: f'<a target="blank" href="{x.link}">{x.title}</a>',axis=1)
-                            _related_products_df["buy from site"] = _related_products_df[["link","title"]].apply(lambda x: f'[{x.title}]({x.link})',axis=1)
-                            _related_products_df["thumbnail"] = _related_products_df["thumbnail"].apply(lambda x: f'<img src="{x}" width="100" height="100">')
-      
+                            _related_products_df = processProduct(related_products_df)
                             st.markdown(
-                                _related_products_df[["thumbnail","buy from site","price"]]
+                                _related_products_df[["thumbnail","title","buy from site","price"]]
                                     .to_markdown(),
                                 unsafe_allow_html=True
                                 )

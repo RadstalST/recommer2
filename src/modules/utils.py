@@ -19,3 +19,6 @@ def isValidString(string):
 
 def removeHTMLParametres(string):
     return re.sub(r"(\?|\&)([^=]+)\=([^&]+)", "", string)
+
+def domainExtractor(url):
+    return re.search(r"(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)", url).group(1)
