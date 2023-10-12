@@ -3,6 +3,9 @@ from src.modules.search import getProducts, ProductScope, ProductAttribute,getAt
 from streamlit_js_eval import streamlit_js_eval, copy_to_clipboard, create_share_link, get_geolocation
 from src.modules import utils
 import json
+import pandas as pd
+from st_aggrid import AgGrid, JsCode, GridOptionsBuilder
+
 #init cache decorator
 getAttribute = st.cache_data(getAttribute)
 getProducts = st.cache_data(getProducts)
@@ -138,6 +141,25 @@ with productOptionsContainer:
                                 related_products = getSerpProduct(product,hash=product.name,latlong=latlong)
                                 st.write(related_products)
                                 st.write("Done")
+
+                            
+                            related_products_df = pd.DataFrame(related_products)
+                            _related_products_df = related_products_df.copy()
+                            _related_products_df = _related_products_df.set_index("source")[["title","link","price","thumbnail"]]
+                            _related_products_df["link"] = _related_products_df["link"].apply(utils.removeHTMLParametres)
+                            # _related_products_df["title"] = _related_products_df[["link","title"]].apply(lambda x: f'<a target="blank" href="{x.link}">{x.title}</a>',axis=1)
+                            _related_products_df["buy from site"] = _related_products_df[["link","title"]].apply(lambda x: f'[{x.title}]({x.link})',axis=1)
+                            _related_products_df["thumbnail"] = _related_products_df["thumbnail"].apply(lambda x: f'<img src="{x}" width="100" height="100">')
+      
+                            st.markdown(
+                                _related_products_df[["thumbnail","buy from site","price"]]
+                                    .to_markdown(),
+                                unsafe_allow_html=True
+                                )
+
+                            
+
+
                     
                 st.write("Done")
 

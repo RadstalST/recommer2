@@ -1,6 +1,6 @@
 from geopy.geocoders import Nominatim
 import os
-
+import re
 def getCountryCode(latlong):
     try:
         geolocator = Nominatim(user_agent=os.getenv("NOMATIM_USER_AGENT",""))
@@ -16,3 +16,6 @@ def isValidString(string):
     if string == "":
         return False
     return True
+
+def removeHTMLParametres(string):
+    return re.sub(r"(\?|\&)([^=]+)\=([^&]+)", "", string)
